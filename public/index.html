@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USFLIX · Shree & Ritanshu</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌙</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d0d0d; color: #e8e0d5; font-family: 'DM Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
+  .grain { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E"); pointer-events: none; z-index: 1; opacity: 0.4; }
+  .ambient-glow { position: fixed; top: -30%; left: 50%; transform: translateX(-50%); width: 80%; height: 60%; background: radial-gradient(ellipse, rgba(229,9,20,0.12) 0%, rgba(180,30,60,0.06) 40%, transparent 70%); pointer-events: none; z-index: 0; }
+  .ambient-glow2 { position: fixed; bottom: -20%; right: -10%; width: 50%; height: 50%; background: radial-gradient(ellipse, rgba(255,180,140,0.06) 0%, transparent 60%); pointer-events: none; z-index: 0; }
+  .content { position: relative; z-index: 2; }
+
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 40px; background: linear-gradient(to bottom, rgba(13,13,13,0.98) 0%, transparent 100%); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(229,9,20,0.08); }
+  .nav-logo { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; letter-spacing: 0.04em; color: #e50914; text-shadow: 0 0 30px rgba(229,9,20,0.4); }
+  .nav-logo span { color: #f5c6cb; font-style: italic; font-weight: 400; font-size: 14px; display: block; letter-spacing: 0.12em; margin-top: -2px; }
+  .avatar { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; letter-spacing: 0.05em; border: 2px solid rgba(229,9,20,0.5); }
+  .avatar.s { background: linear-gradient(135deg, #c8637a, #e8a0b4); color: #fff; }
+  .avatar.r { background: linear-gradient(135deg, #7b5ea7, #b08dc5); color: #fff; margin-left: -8px; border-color: rgba(180,140,200,0.5); }
+
+  .hero { padding: 60px 40px 40px; position: relative; min-height: 420px; display: flex; flex-direction: column; justify-content: flex-end; }
+  .hero-bg { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(ellipse at 30% 50%, rgba(229,9,20,0.15) 0%, transparent 50%), radial-gradient(ellipse at 70% 30%, rgba(255,160,160,0.08) 0%, transparent 40%), linear-gradient(to bottom, transparent 40%, #0d0d0d 100%); }
+  .hero-stars { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; }
+  .star { position: absolute; background: #fff; border-radius: 50%; animation: twinkle var(--d, 3s) ease-in-out infinite; opacity: var(--o, 0.4); }
+  @keyframes twinkle { 0%, 100% { opacity: var(--o, 0.4); transform: scale(1); } 50% { opacity: calc(var(--o, 0.4) * 0.3); transform: scale(0.6); } }
+  .hero-eyebrow { font-size: 11px; letter-spacing: 0.2em; color: #e50914; text-transform: uppercase; margin-bottom: 12px; position: relative; }
+  .hero-title { font-family: 'Playfair Display', serif; font-size: clamp(36px, 5vw, 58px); font-weight: 600; line-height: 1.1; position: relative; max-width: 600px; }
+  .hero-title .highlight { color: transparent; -webkit-text-stroke: 1px rgba(229,9,20,0.6); font-style: italic; }
+  .hero-sub { font-size: 14px; color: rgba(232,224,213,0.55); margin-top: 12px; position: relative; max-width: 420px; line-height: 1.7; }
+  .hero-actions { display: flex; gap: 12px; margin-top: 28px; position: relative; flex-wrap: wrap; }
+  .match-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(229,9,20,0.12); border: 1px solid rgba(229,9,20,0.25); padding: 5px 12px; border-radius: 20px; font-size: 12px; color: #f5a0a8; margin-top: 16px; position: relative; width: fit-content; }
+  .heart-pulse { display: inline-block; animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.3); } }
+
+  .btn-play { display: flex; align-items: center; gap: 8px; background: #e50914; color: #fff; border: none; padding: 10px 24px; border-radius: 4px; font-size: 15px; font-weight: 500; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+  .btn-play:hover { background: #f40612; transform: scale(1.02); }
+  .btn-more { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.12); color: #e8e0d5; border: 1px solid rgba(255,255,255,0.15); padding: 10px 24px; border-radius: 4px; font-size: 15px; font-weight: 400; cursor: pointer; font-family: inherit; transition: all 0.2s; backdrop-filter: blur(8px); }
+  .btn-more:hover { background: rgba(255,255,255,0.18); }
+
+  .featured-banner { margin: 0 40px 36px; border-radius: 8px; overflow: hidden; background: linear-gradient(135deg, #1a0a0b 0%, #2a0f14 40%, #1e0d1a 100%); border: 1px solid rgba(229,9,20,0.15); padding: 32px 36px; position: relative; display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; }
+  .featured-banner::before { content: ''; position: absolute; top: 0; right: 0; width: 50%; height: 100%; background: radial-gradient(ellipse at 80% 50%, rgba(229,9,20,0.1) 0%, transparent 60%); pointer-events: none; }
+  .banner-left { flex: 1; min-width: 200px; }
+  .banner-tag { font-size: 10px; letter-spacing: 0.2em; color: #e50914; text-transform: uppercase; margin-bottom: 10px; }
+  .banner-title { font-family: 'Playfair Display', serif; font-size: 26px; line-height: 1.2; margin-bottom: 8px; }
+  .banner-desc { font-size: 13px; color: rgba(232,224,213,0.5); line-height: 1.6; max-width: 360px; }
+  .banner-right { display: flex; gap: 24px; flex-wrap: wrap; }
+  .stat-box { text-align: center; }
+  .stat-num { font-family: 'Playfair Display', serif; font-size: 28px; color: #e50914; }
+  .stat-lbl { font-size: 11px; color: rgba(232,224,213,0.4); letter-spacing: 0.08em; margin-top: 2px; }
+
+  .section { padding: 0 40px 40px; }
+  .section-title { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 400; color: #e8e0d5; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-title .dot { width: 6px; height: 6px; border-radius: 50%; background: #e50914; flex-shrink: 0; }
+  .section-label { font-size: 11px; letter-spacing: 0.15em; color: rgba(229,9,20,0.7); text-transform: uppercase; margin-left: 4px; }
+
+  .episodes-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+  .episode-card { cursor: pointer; border-radius: 6px; overflow: hidden; transition: transform 0.25s, box-shadow 0.25s; position: relative; background: #1a1a1a; }
+  .episode-card:hover { transform: scale(1.04); z-index: 10; box-shadow: 0 12px 40px rgba(0,0,0,0.7); }
+  .episode-thumb { width: 100%; aspect-ratio: 16/10; position: relative; overflow: hidden; }
+  .thumb-gradient { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; position: relative; }
+  .thumb-icon { font-size: 28px; z-index: 1; }
+  .ep-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%); padding: 20px 10px 8px; }
+  .ep-number { font-size: 10px; letter-spacing: 0.12em; color: rgba(229,9,20,0.8); text-transform: uppercase; }
+  .ep-title { font-family: 'Playfair Display', serif; font-size: 13px; color: #f0e8df; line-height: 1.3; margin-top: 2px; }
+  .ep-meta { font-size: 11px; color: rgba(232,224,213,0.45); margin-top: 4px; }
+  .ep-progress { height: 2px; background: rgba(255,255,255,0.12); border-radius: 1px; margin-top: 6px; }
+  .ep-progress-fill { height: 100%; background: #e50914; border-radius: 1px; }
+  .new-badge { position: absolute; top: 8px; right: 8px; background: #e50914; color: #fff; font-size: 9px; letter-spacing: 0.1em; padding: 3px 7px; border-radius: 3px; text-transform: uppercase; font-weight: 500; }
+  .coming-badge { position: absolute; top: 8px; right: 8px; background: rgba(255,200,120,0.15); border: 1px solid rgba(255,200,120,0.3); color: #ffc878; font-size: 9px; letter-spacing: 0.1em; padding: 3px 7px; border-radius: 3px; text-transform: uppercase; font-weight: 500; }
+  .locked-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(13,13,13,0.6); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(1px); }
+  .lock-icon { font-size: 20px; opacity: 0.6; }
+
+  .modal-wrap { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+  .modal-wrap.open { display: flex; }
+  .modal { background: #141414; border-radius: 8px; overflow: hidden; max-width: 580px; width: 100%; border: 1px solid rgba(229,9,20,0.2); animation: modalIn 0.25s ease; }
+  @keyframes modalIn { from { opacity: 0; transform: scale(0.94) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+  .modal-hero { height: 200px; position: relative; display: flex; align-items: center; justify-content: center; }
+  .modal-icon { font-size: 52px; z-index: 1; }
+  .modal-body { padding: 24px 28px 28px; }
+  .modal-ep { font-size: 11px; letter-spacing: 0.15em; color: #e50914; text-transform: uppercase; margin-bottom: 6px; }
+  .modal-title { font-family: 'Playfair Display', serif; font-size: 22px; margin-bottom: 10px; }
+  .modal-meta { font-size: 12px; color: rgba(232,224,213,0.4); margin-bottom: 12px; }
+  .modal-desc { font-size: 13px; color: rgba(232,224,213,0.65); line-height: 1.7; }
+  .modal-video-wrap { margin-top: 16px; border-radius: 6px; overflow: hidden; background: #000; display: none; }
+  .modal-video-wrap video { width: 100%; max-height: 240px; display: block; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+  .btn-modal-play { background: #e50914; color: #fff; border: none; padding: 9px 20px; border-radius: 4px; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+  .btn-modal-close { background: transparent; color: rgba(232,224,213,0.6); border: 1px solid rgba(255,255,255,0.15); padding: 9px 20px; border-radius: 4px; font-family: inherit; font-size: 13px; cursor: pointer; }
+  .btn-modal-close:hover { background: rgba(255,255,255,0.08); }
+
+  .add-section { padding: 0 40px 40px; }
+  .add-card { border: 1px dashed rgba(229,9,20,0.25); border-radius: 8px; padding: 28px 32px; background: rgba(229,9,20,0.03); transition: border-color 0.2s, background 0.2s; }
+  .add-card:hover { border-color: rgba(229,9,20,0.4); background: rgba(229,9,20,0.06); }
+  .add-title { font-family: 'Playfair Display', serif; font-size: 16px; margin-bottom: 6px; color: rgba(232,224,213,0.7); }
+  .add-sub { font-size: 12px; color: rgba(232,224,213,0.35); margin-bottom: 20px; line-height: 1.5; }
+  .add-form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 11px; letter-spacing: 0.1em; color: rgba(232,224,213,0.4); text-transform: uppercase; }
+  input, select, textarea { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 9px 12px; color: #e8e0d5; font-family: inherit; font-size: 13px; transition: border-color 0.2s; width: 100%; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: rgba(229,9,20,0.5); background: rgba(229,9,20,0.04); }
+  textarea { resize: vertical; min-height: 70px; }
+  select option { background: #1a1a1a; }
+  .btn-add { grid-column: 1 / -1; background: linear-gradient(135deg, #e50914 0%, #c00710 100%); color: #fff; border: none; padding: 11px 24px; border-radius: 4px; font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; margin-top: 4px; }
+  .btn-add:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(229,9,20,0.3); }
+  .btn-add:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .upload-area { grid-column: 1 / -1; border: 1px dashed rgba(255,255,255,0.15); border-radius: 4px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; }
+  .upload-area:hover { border-color: rgba(229,9,20,0.4); background: rgba(229,9,20,0.04); }
+  .upload-area input[type=file] { position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .upload-text { font-size: 13px; color: rgba(232,224,213,0.4); }
+  .upload-text span { color: #e50914; }
+  .upload-preview { font-size: 12px; color: #f5a0a8; margin-top: 6px; }
+
+  footer { text-align: center; padding: 32px 40px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 12px; color: rgba(232,224,213,0.2); letter-spacing: 0.08em; }
+  footer span { color: rgba(229,9,20,0.5); }
+
+  .toast { position: fixed; bottom: 24px; right: 24px; background: #1e1e1e; border: 1px solid rgba(229,9,20,0.3); border-radius: 6px; padding: 12px 20px; font-size: 13px; color: #e8e0d5; z-index: 300; transform: translateY(80px); opacity: 0; transition: all 0.3s; max-width: 280px; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  .loading { display: flex; align-items: center; justify-content: center; padding: 40px; font-size: 13px; color: rgba(232,224,213,0.3); letter-spacing: 0.1em; }
+
+  @media (max-width: 600px) {
+    nav, .hero, .section, .add-section { padding-left: 20px; padding-right: 20px; }
+    .featured-banner { margin-left: 20px; margin-right: 20px; padding: 20px; }
+    .episodes-row { grid-template-columns: repeat(2, 1fr); }
+    .add-form { grid-template-columns: 1fr; }
+    .hero { padding-top: 40px; min-height: 340px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+<div class="ambient-glow"></div>
+<div class="ambient-glow2"></div>
+
+<div class="content">
+  <nav>
+    <div class="nav-logo">
+      ✦ USFLIX
+      <span>shree &amp; ritanshu · private</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:20px;">
+      <div style="display:flex;">
+        <div class="avatar s">S</div>
+        <div class="avatar r">R</div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-stars" id="stars"></div>
+    <div class="hero-eyebrow">⋆ now streaming · our story</div>
+    <h1 class="hero-title">Us, <span class="highlight">Unfiltered</span><br>— A Love Series</h1>
+    <p class="hero-sub">Every episode is a memory. Every memory is ours. This one never ends.</p>
+    <div class="match-badge"><span class="heart-pulse">♥</span> Shree &amp; Ritanshu · Since the beginning</div>
+    <div class="hero-actions">
+      <button class="btn-play" onclick="scrollToEpisodes()">▶ &nbsp;Play Episode 1</button>
+      <button class="btn-more" onclick="scrollToAdd()">＋ &nbsp;Add New Memory</button>
+    </div>
+  </div>
+
+  <div class="featured-banner">
+    <div class="banner-left">
+      <div class="banner-tag">✦ your universe</div>
+      <div class="banner-title">The Shree × Ritanshu Chronicles</div>
+      <div class="banner-desc">A never-ending series. New episodes drop whenever you two make a memory worth keeping.</div>
+    </div>
+    <div class="banner-right">
+      <div class="stat-box"><div class="stat-num" id="ep-count">—</div><div class="stat-lbl">Episodes</div></div>
+      <div class="stat-box"><div class="stat-num">∞</div><div class="stat-lbl">Seasons</div></div>
+      <div class="stat-box"><div class="stat-num">100%</div><div class="stat-lbl">Match</div></div>
+    </div>
+  </div>
+
+  <div class="section" id="episodes-section">
+    <div class="section-title"><span class="dot"></span> Season 1 — How It All Started <span class="section-label">Complete</span></div>
+    <div class="episodes-row" id="ep-row-1"><div class="loading">Loading memories...</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><span class="dot"></span> Season 2 — The Cozy Middle <span class="section-label">Ongoing</span></div>
+    <div class="episodes-row" id="ep-row-2"><div class="loading">Loading memories...</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><span class="dot"></span> Season 3 — Coming Soon <span class="section-label" style="color:#ffc878;">Future</span></div>
+    <div class="episodes-row" id="ep-row-3"><div class="loading">Loading memories...</div></div>
+  </div>
+
+  <div class="add-section" id="add-section">
+    <div class="add-card">
+      <div class="add-title">✦ Add a New Episode</div>
+      <div class="add-sub">Every memory deserves its own episode. Upload a video or just write it down — your personal Netflix never forgets.</div>
+      <div class="add-form">
+        <div class="form-group">
+          <label>Episode Title</label>
+          <input type="text" id="new-title" placeholder="The night we stayed up till 4am...">
+        </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input type="text" id="new-date" placeholder="e.g. March 2024">
+        </div>
+        <div class="form-group full">
+          <label>Memory Note</label>
+          <textarea id="new-desc" placeholder="What happened? How did it feel? What do you never want to forget?"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Season</label>
+          <select id="new-season">
+            <option value="1">Season 1 — How It All Started</option>
+            <option value="2" selected>Season 2 — The Cozy Middle</option>
+            <option value="3">Season 3 — Coming Soon</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Mood</label>
+          <select id="new-mood">
+            <option value="🌙">🌙 Dreamy</option>
+            <option value="🕯️">🕯️ Cozy</option>
+            <option value="🌹">🌹 Romantic</option>
+            <option value="✨">✨ Magical</option>
+            <option value="💌">💌 Tender</option>
+            <option value="🎵">🎵 Musical</option>
+            <option value="🌸">🌸 Soft</option>
+            <option value="🔥">🔥 Passionate</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>Video (optional)</label>
+          <div class="upload-area" id="upload-area">
+            <input type="file" id="video-file" accept="video/*" onchange="handleFileSelect(event)">
+            <div class="upload-text">Drop a video here or <span>browse files</span></div>
+            <div class="upload-preview" id="upload-preview"></div>
+          </div>
+        </div>
+        <button class="btn-add" id="btn-add" onclick="addEpisode()">✦ &nbsp;Save This Memory</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>✦ USFLIX · <span>Shree &amp; Ritanshu</span> · Private &amp; Eternal &nbsp;·&nbsp; No cancellations. No finales.</p>
+  </footer>
+</div>
+
+<div class="modal-wrap" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-hero" id="modal-hero"><span class="modal-icon" id="modal-icon">🌙</span></div>
+    <div class="modal-body">
+      <div class="modal-ep" id="modal-ep">S1 · E1</div>
+      <div class="modal-title" id="modal-title">Episode Title</div>
+      <div class="modal-meta" id="modal-meta">2023 · Memory</div>
+      <div class="modal-desc" id="modal-desc"></div>
+      <div class="modal-video-wrap" id="modal-video-wrap">
+        <video id="modal-video" controls></video>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-modal-play" id="modal-play-btn">▶ &nbsp;Relive This</button>
+        <button class="btn-modal-close" onclick="document.getElementById('modal').classList.remove('open')">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const PALETTES = {
+  "🌙": ["#1a0f2e","#2d1b5e","#4a2d8a"],
+  "🕯️": ["#1e1208","#3d2510","#7a4a1e"],
+  "🌹": ["#1a0812","#3d1020","#8a2040"],
+  "✨": ["#0d1a2e","#153056","#1a3a6e"],
+  "💌": ["#1a0a14","#3d1428","#8a2060"],
+  "🎵": ["#0a1a1a","#103030","#1a5050"],
+  "🌸": ["#1a0f18","#3a1a34","#7a3070"],
+  "🔥": ["#1a0800","#3d1500","#8a3000"],
+};
+
+let selectedFile = null;
+
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (file) {
+    selectedFile = file;
+    document.getElementById('upload-preview').textContent = '✓ ' + file.name;
+  }
+}
+
+async function loadEpisodes() {
+  try {
+    const res = await fetch('/api/episodes');
+    const data = await res.json();
+    renderAll(data.episodes || []);
+  } catch (e) {
+    // fallback to defaults if API not ready
+    renderAll([]);
+  }
+}
+
+function renderAll(episodes) {
+  const rows = { 1: document.getElementById('ep-row-1'), 2: document.getElementById('ep-row-2'), 3: document.getElementById('ep-row-3') };
+  rows[1].innerHTML = ''; rows[2].innerHTML = ''; rows[3].innerHTML = '';
+
+  const defaults = getDefaultEpisodes();
+  const all = [...defaults, ...episodes];
+
+  all.forEach(ep => {
+    const row = rows[ep.season] || rows[2];
+    renderCard(ep, row);
+  });
+
+  document.getElementById('ep-count').textContent = all.length;
+}
+
+function getDefaultEpisodes() {
+  return [
+    { id:'d1', title:"The Day We Met", date:"The beginning", desc:"The universe conspired. Two strangers, one moment, and suddenly everything shifted.", mood:"✨", ep:"S1 · E1", season:1, progress:100, isNew:false },
+    { id:'d2', title:"The First Text", date:"A few days later", desc:"You typed it, deleted it, typed it again. Three dots appeared on the other screen.", mood:"💌", ep:"S1 · E2", season:1, progress:100, isNew:false },
+    { id:'d3', title:"Our First Real Talk", date:"Late night", desc:"The kind of conversation that makes you look up and realize it's 3am.", mood:"🌙", ep:"S1 · E3", season:1, progress:100, isNew:false },
+    { id:'d4', title:"The First Date", date:"A nervous afternoon", desc:"Overthought outfits. Underthought words. But somehow, everything was exactly right.", mood:"🌹", ep:"S2 · E1", season:2, progress:80, isNew:true },
+    { id:'d5', title:"When It Became Real", date:"A quiet evening", desc:"No grand gesture. Just a moment where you both silently agreed: this is something.", mood:"🕯️", ep:"S2 · E2", season:2, progress:60, isNew:false },
+    { id:'d6', title:"Our Comfort Episode", date:"A rainy day", desc:"Blankets, something playing neither of you were really watching. Just warmth.", mood:"🕯️", ep:"S2 · E3", season:2, progress:40, isNew:false },
+    { id:'d7', title:"The Playlist We Made", date:"A random night", desc:"Song by song, you built a soundtrack to yourselves.", mood:"🎵", ep:"S2 · E4", season:2, progress:30, isNew:true },
+    { id:'d8', title:"A Trip Together", date:"Coming soon", desc:"Somewhere new. Same people. This episode is still being written.", mood:"✨", ep:"S3 · E1", season:3, progress:0, locked:true },
+    { id:'d9', title:"The One We Don't Know Yet", date:"Whenever it happens", desc:"A future memory sitting patiently, waiting to become real.", mood:"🌸", ep:"S3 · E2", season:3, progress:0, locked:true },
+  ];
+}
+
+function renderCard(ep, container) {
+  const p = PALETTES[ep.mood] || PALETTES["🌙"];
+  const card = document.createElement('div');
+  card.className = 'episode-card';
+  card.innerHTML = `
+    <div class="episode-thumb">
+      <div class="thumb-gradient" style="background:linear-gradient(135deg,${p[0]} 0%,${p[1]} 55%,${p[2]} 100%);">
+        <span class="thumb-icon">${ep.mood}</span>
+        <div class="ep-overlay">
+          <div class="ep-number">${ep.ep || ''}</div>
+          <div class="ep-title">${ep.title}</div>
+          <div class="ep-meta">${ep.date || ''}</div>
+          ${ep.progress > 0 ? `<div class="ep-progress"><div class="ep-progress-fill" style="width:${ep.progress}%"></div></div>` : ''}
+        </div>
+      </div>
+      ${ep.isNew ? '<div class="new-badge">New</div>' : ''}
+      ${ep.locked ? '<div class="coming-badge">Soon</div>' : ''}
+      ${ep.locked ? '<div class="locked-overlay"><span class="lock-icon">🔒</span></div>' : ''}
+      ${ep.videoUrl ? '<div style="position:absolute;bottom:8px;left:8px;background:rgba(229,9,20,0.8);border-radius:3px;padding:2px 7px;font-size:9px;color:#fff;letter-spacing:0.08em;">VIDEO</div>' : ''}
+    </div>
+  `;
+  if (!ep.locked) card.addEventListener('click', () => openModal(ep));
+  container.appendChild(card);
+}
+
+function openModal(ep) {
+  const p = PALETTES[ep.mood] || PALETTES["🌙"];
+  document.getElementById('modal-hero').style.background = `linear-gradient(135deg,${p[0]} 0%,${p[1]} 55%,${p[2]} 100%)`;
+  document.getElementById('modal-icon').textContent = ep.mood;
+  document.getElementById('modal-ep').textContent = ep.ep || '';
+  document.getElementById('modal-title').textContent = ep.title;
+  document.getElementById('modal-meta').textContent = ep.date || '';
+  document.getElementById('modal-desc').textContent = ep.desc || '';
+
+  const videoWrap = document.getElementById('modal-video-wrap');
+  const video = document.getElementById('modal-video');
+  if (ep.videoUrl) {
+    video.src = ep.videoUrl;
+    videoWrap.style.display = 'block';
+  } else {
+    videoWrap.style.display = 'none';
+    video.src = '';
+  }
+
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal')) {
+    document.getElementById('modal').classList.remove('open');
+    document.getElementById('modal-video').pause();
+  }
+}
+
+async function addEpisode() {
+  const title = document.getElementById('new-title').value.trim();
+  const date = document.getElementById('new-date').value.trim();
+  const desc = document.getElementById('new-desc').value.trim();
+  const season = parseInt(document.getElementById('new-season').value);
+  const mood = document.getElementById('new-mood').value;
+
+  if (!title) { showToast('Give your memory a title ✦'); return; }
+
+  const btn = document.getElementById('btn-add');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  try {
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('date', date || 'A moment in time');
+    formData.append('desc', desc || 'A memory worth keeping.');
+    formData.append('season', season);
+    formData.append('mood', mood);
+    if (selectedFile) formData.append('video', selectedFile);
+
+    const res = await fetch('/api/episodes', { method: 'POST', body: formData });
+    const data = await res.json();
+
+    if (data.success) {
+      document.getElementById('new-title').value = '';
+      document.getElementById('new-date').value = '';
+      document.getElementById('new-desc').value = '';
+      document.getElementById('upload-preview').textContent = '';
+      selectedFile = null;
+      showToast('✦ New episode saved to your story');
+      loadEpisodes();
+    } else {
+      showToast('Something went wrong. Try again.');
+    }
+  } catch (e) {
+    showToast('Could not save. Check connection.');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '✦  Save This Memory';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function scrollToEpisodes() { document.getElementById('episodes-section').scrollIntoView({ behavior: 'smooth' }); }
+function scrollToAdd() { document.getElementById('add-section').scrollIntoView({ behavior: 'smooth' }); }
+
+function makeStars() {
+  const container = document.getElementById('stars');
+  for (let i = 0; i < 60; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 2 + 0.8;
+    s.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${(Math.random()*3+2).toFixed(1)}s;--o:${(Math.random()*0.5+0.2).toFixed(2)};animation-delay:${(Math.random()*4).toFixed(1)}s;`;
+    container.appendChild(s);
+  }
+}
+
+makeStars();
+loadEpisodes();
+</script>
+</body>
+</html>
