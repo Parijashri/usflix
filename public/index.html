@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USFLIX · Shree & Ritanshu</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌹</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:#090608;color:#ede4dc;font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
+#particle-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1}
+.amb1{position:fixed;top:-20%;left:50%;transform:translateX(-50%);width:90%;height:55%;background:radial-gradient(ellipse,rgba(180,0,20,0.13) 0%,rgba(120,0,30,0.06) 45%,transparent 70%);pointer-events:none;z-index:0}
+.amb2{position:fixed;bottom:-15%;right:-5%;width:45%;height:45%;background:radial-gradient(ellipse,rgba(255,150,120,0.05) 0%,transparent 60%);pointer-events:none;z-index:0}
+.amb3{position:fixed;top:30%;left:-10%;width:40%;height:40%;background:radial-gradient(ellipse,rgba(140,0,60,0.07) 0%,transparent 60%);pointer-events:none;z-index:0}
+.content{position:relative;z-index:2}
+nav{display:flex;align-items:center;justify-content:space-between;padding:16px 44px;background:linear-gradient(to bottom,rgba(9,6,8,0.97) 0%,transparent 100%);position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(200,0,30,0.1)}
+.nav-logo{font-family:'Playfair Display',serif;font-size:24px;font-weight:600;letter-spacing:0.04em;color:#e50914;filter:drop-shadow(0 0 18px rgba(229,9,20,0.5))}
+.nav-logo span{color:#f0c0c8;font-style:italic;font-weight:400;font-size:13px;display:block;letter-spacing:0.14em;margin-top:-3px}
+.avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;border:2px solid rgba(229,9,20,0.5);transition:transform 0.3s}
+.avatar:hover{transform:scale(1.1)}
+.avatar.s{background:linear-gradient(135deg,#b85068,#e090a8);color:#fff}
+.avatar.r{background:linear-gradient(135deg,#6a4890,#a07ab8);color:#fff;margin-left:-10px;border-color:rgba(160,122,184,0.6)}
+.hero{padding:70px 44px 50px;position:relative;min-height:500px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
+.hero-bg{position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 25% 50%,rgba(200,0,30,0.18) 0%,transparent 55%),radial-gradient(ellipse at 75% 25%,rgba(255,140,140,0.07) 0%,transparent 45%),linear-gradient(to bottom,transparent 35%,#090608 100%)}
+.hero-vignette{position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at center,transparent 40%,rgba(9,6,8,0.6) 100%)}
+.hero-eyebrow{font-size:11px;letter-spacing:0.24em;color:#e50914;text-transform:uppercase;margin-bottom:14px;position:relative;display:flex;align-items:center;gap:10px}
+.hero-eyebrow::before{content:'';display:inline-block;width:30px;height:1px;background:#e50914;opacity:0.6}
+.hero-title{font-family:'Playfair Display',serif;font-size:clamp(40px,6vw,68px);font-weight:600;line-height:1.05;position:relative;max-width:600px}
+.hero-title em{color:transparent;-webkit-text-stroke:1.5px rgba(229,9,20,0.7);font-style:italic}
+.hero-sub{font-size:15px;color:rgba(237,228,220,0.5);margin-top:14px;position:relative;max-width:440px;line-height:1.8;font-weight:300}
+.match-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(229,9,20,0.1);border:1px solid rgba(229,9,20,0.22);padding:6px 16px;border-radius:24px;font-size:12px;color:#f0a0b0;margin-top:18px;position:relative;width:fit-content;backdrop-filter:blur(6px)}
+.heart-pulse{display:inline-block;animation:heartpulse 1.6s ease-in-out infinite}
+@keyframes heartpulse{0%,100%{transform:scale(1)}40%{transform:scale(1.45)}60%{transform:scale(1.2)}}
+.hero-actions{display:flex;gap:14px;margin-top:32px;position:relative;flex-wrap:wrap}
+.btn-play{display:flex;align-items:center;gap:8px;background:#e50914;color:#fff;border:none;padding:12px 28px;border-radius:4px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;transition:all 0.25s}
+.btn-play:hover{background:#f40612;transform:translateY(-2px);box-shadow:0 8px 24px rgba(229,9,20,0.35)}
+.btn-more{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.08);color:#ede4dc;border:1px solid rgba(255,255,255,0.14);padding:12px 28px;border-radius:4px;font-size:15px;font-weight:400;cursor:pointer;font-family:inherit;transition:all 0.25s;backdrop-filter:blur(10px)}
+.btn-more:hover{background:rgba(255,255,255,0.14);transform:translateY(-2px)}
+.caricature-slot{position:absolute;right:6%;bottom:0;height:88%;display:flex;align-items:flex-end;z-index:3}
+.caricature-slot img{height:100%;max-height:420px;object-fit:contain;filter:drop-shadow(0 0 40px rgba(229,9,20,0.2));animation:floatup 4s ease-in-out infinite}
+.caricature-placeholder{height:360px;width:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px dashed rgba(229,9,20,0.18);border-radius:12px;background:rgba(229,9,20,0.02);gap:12px;animation:floatup 4s ease-in-out infinite;padding:24px;text-align:center}
+.caricature-placeholder .ph-icon{font-size:36px}
+.caricature-placeholder span{font-size:12px;color:rgba(229,9,20,0.38);line-height:1.7}
+.caricature-placeholder strong{color:rgba(229,9,20,0.55)}
+@keyframes floatup{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.featured-banner{margin:0 44px 40px;border-radius:10px;overflow:hidden;background:linear-gradient(135deg,#100508 0%,#200810 45%,#160610 100%);border:1px solid rgba(229,9,20,0.14);padding:36px 40px;position:relative;display:flex;justify-content:space-between;align-items:center;gap:28px;flex-wrap:wrap}
+.featured-banner::before{content:'';position:absolute;top:0;right:0;width:55%;height:100%;background:radial-gradient(ellipse at 85% 50%,rgba(229,9,20,0.1) 0%,transparent 65%);pointer-events:none}
+.featured-banner::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,rgba(229,9,20,0.3),transparent)}
+.banner-left{flex:1;min-width:220px}
+.banner-tag{font-size:10px;letter-spacing:0.22em;color:#e50914;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.banner-tag::before{content:'';display:inline-block;width:20px;height:1px;background:#e50914}
+.banner-title{font-family:'Playfair Display',serif;font-size:28px;line-height:1.2;margin-bottom:10px}
+.banner-desc{font-size:13px;color:rgba(237,228,220,0.45);line-height:1.7;max-width:380px}
+.banner-right{display:flex;gap:28px;flex-wrap:wrap}
+.stat-box{text-align:center}
+.stat-num{font-family:'Playfair Display',serif;font-size:32px;color:#e50914;line-height:1}
+.stat-lbl{font-size:11px;color:rgba(237,228,220,0.35);letter-spacing:0.1em;margin-top:4px;text-transform:uppercase}
+.section-divider{height:1px;background:linear-gradient(to right,transparent,rgba(229,9,20,0.15),transparent);margin:0 44px 36px}
+.section{padding:0 44px 44px}
+.section-title{font-family:'Playfair Display',serif;font-size:19px;font-weight:400;color:#ede4dc;margin-bottom:18px;display:flex;align-items:center;gap:12px}
+.section-title .dot{width:7px;height:7px;border-radius:50%;background:#e50914;flex-shrink:0;box-shadow:0 0 8px rgba(229,9,20,0.6)}
+.section-label{font-size:10px;letter-spacing:0.16em;color:rgba(229,9,20,0.65);text-transform:uppercase;margin-left:6px}
+.episodes-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:12px}
+.episode-card{cursor:pointer;border-radius:8px;overflow:hidden;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.3s;position:relative;background:#140a10}
+.episode-card:hover{transform:scale(1.06) translateY(-4px);z-index:10;box-shadow:0 16px 48px rgba(0,0,0,0.8),0 0 20px rgba(229,9,20,0.12)}
+.episode-thumb{width:100%;aspect-ratio:16/10;position:relative;overflow:hidden}
+.thumb-gradient{width:100%;height:100%;display:flex;align-items:center;justify-content:center;position:relative;transition:filter 0.3s}
+.episode-card:hover .thumb-gradient{filter:brightness(1.14)}
+.thumb-icon{font-size:30px;z-index:1;transition:transform 0.3s}
+.episode-card:hover .thumb-icon{transform:scale(1.18)}
+.ep-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,0.96) 0%,rgba(0,0,0,0.4) 60%,transparent 100%);padding:22px 12px 10px}
+.ep-number{font-size:9px;letter-spacing:0.14em;color:rgba(229,9,20,0.85);text-transform:uppercase;font-weight:500}
+.ep-title{font-family:'Playfair Display',serif;font-size:13px;color:#f0e4dc;line-height:1.3;margin-top:3px}
+.ep-meta{font-size:11px;color:rgba(237,228,220,0.4);margin-top:4px}
+.ep-progress{height:2px;background:rgba(255,255,255,0.1);border-radius:1px;margin-top:7px}
+.ep-progress-fill{height:100%;background:linear-gradient(to right,#e50914,#ff4040);border-radius:1px}
+.new-badge{position:absolute;top:9px;right:9px;background:#e50914;color:#fff;font-size:9px;letter-spacing:0.1em;padding:3px 8px;border-radius:3px;text-transform:uppercase;font-weight:500;box-shadow:0 2px 8px rgba(229,9,20,0.4)}
+.coming-badge{position:absolute;top:9px;right:9px;background:rgba(255,196,100,0.12);border:1px solid rgba(255,196,100,0.28);color:#ffc464;font-size:9px;letter-spacing:0.1em;padding:3px 8px;border-radius:3px;text-transform:uppercase;font-weight:500}
+.locked-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(9,6,8,0.65);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.video-badge{position:absolute;bottom:9px;left:9px;background:rgba(229,9,20,0.8);border-radius:3px;padding:2px 8px;font-size:9px;color:#fff;letter-spacing:0.08em;text-transform:uppercase}
+.modal-wrap{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.88);z-index:200;align-items:center;justify-content:center;padding:20px}
+.modal-wrap.open{display:flex}
+.modal{background:#100810;border-radius:10px;overflow:hidden;max-width:600px;width:100%;border:1px solid rgba(229,9,20,0.18);animation:modalIn 0.3s cubic-bezier(0.34,1.4,0.64,1)}
+@keyframes modalIn{from{opacity:0;transform:scale(0.92) translateY(14px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-hero{height:210px;position:relative;display:flex;align-items:center;justify-content:center}
+.modal-hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:60%;background:linear-gradient(to top,#100810,transparent)}
+.modal-icon{font-size:56px;z-index:1}
+.modal-body{padding:26px 30px 30px}
+.modal-ep{font-size:10px;letter-spacing:0.18em;color:#e50914;text-transform:uppercase;margin-bottom:7px}
+.modal-title{font-family:'Playfair Display',serif;font-size:24px;margin-bottom:10px;line-height:1.2}
+.modal-meta{font-size:12px;color:rgba(237,228,220,0.38);margin-bottom:14px}
+.modal-desc{font-size:13px;color:rgba(237,228,220,0.62);line-height:1.8}
+.modal-video-wrap{margin-top:18px;border-radius:8px;overflow:hidden;background:#000;display:none}
+.modal-video-wrap video{width:100%;max-height:260px;display:block}
+.modal-actions{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
+.btn-modal-play{background:#e50914;color:#fff;border:none;padding:10px 22px;border-radius:4px;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:7px;transition:all 0.2s}
+.btn-modal-play:hover{background:#f40612;transform:translateY(-1px)}
+.btn-modal-close{background:transparent;color:rgba(237,228,220,0.55);border:1px solid rgba(255,255,255,0.13);padding:10px 22px;border-radius:4px;font-family:inherit;font-size:13px;cursor:pointer;transition:background 0.2s}
+.btn-modal-close:hover{background:rgba(255,255,255,0.07)}
+.add-section{padding:0 44px 44px}
+.add-card{border:1px dashed rgba(229,9,20,0.22);border-radius:10px;padding:32px 36px;background:rgba(229,9,20,0.02);transition:border-color 0.3s,background 0.3s}
+.add-card:hover{border-color:rgba(229,9,20,0.38);background:rgba(229,9,20,0.05)}
+.add-title{font-family:'Playfair Display',serif;font-size:18px;margin-bottom:8px;color:rgba(237,228,220,0.75)}
+.add-sub{font-size:12px;color:rgba(237,228,220,0.32);margin-bottom:22px;line-height:1.6}
+.add-form{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group.full{grid-column:1/-1}
+label{font-size:10px;letter-spacing:0.12em;color:rgba(237,228,220,0.38);text-transform:uppercase}
+input,select,textarea{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:5px;padding:10px 13px;color:#ede4dc;font-family:inherit;font-size:13px;transition:border-color 0.2s,background 0.2s;width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(229,9,20,0.45);background:rgba(229,9,20,0.03)}
+textarea{resize:vertical;min-height:75px}
+select option{background:#1a0a14}
+.btn-add{grid-column:1/-1;background:linear-gradient(135deg,#e50914 0%,#c00710 100%);color:#fff;border:none;padding:13px 28px;border-radius:5px;font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;transition:all 0.25s;margin-top:4px}
+.btn-add:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(229,9,20,0.32)}
+.btn-add:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none}
+.upload-area{grid-column:1/-1;border:1px dashed rgba(255,255,255,0.13);border-radius:5px;padding:22px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative}
+.upload-area:hover{border-color:rgba(229,9,20,0.38);background:rgba(229,9,20,0.03)}
+.upload-area input[type=file]{position:absolute;top:0;left:0;right:0;bottom:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-text{font-size:13px;color:rgba(237,228,220,0.35)}
+.upload-text span{color:#e50914}
+.upload-preview{font-size:12px;color:#f0a0b0;margin-top:6px}
+footer{text-align:center;padding:36px 44px;border-top:1px solid rgba(255,255,255,0.04);font-size:12px;color:rgba(237,228,220,0.18);letter-spacing:0.1em}
+footer .red{color:rgba(229,9,20,0.5)}
+.toast{position:fixed;bottom:26px;right:26px;background:#180810;border:1px solid rgba(229,9,20,0.28);border-radius:8px;padding:13px 22px;font-size:13px;color:#ede4dc;z-index:300;transform:translateY(80px);opacity:0;transition:all 0.35s cubic-bezier(0.34,1.4,0.64,1);max-width:290px}
+.toast.show{transform:translateY(0);opacity:1}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(229,9,20,0.28);border-radius:2px}
+@media(max-width:640px){
+  nav,.hero,.section,.add-section{padding-left:20px;padding-right:20px}
+  .featured-banner{margin-left:20px;margin-right:20px;padding:22px}
+  .section-divider{margin-left:20px;margin-right:20px}
+  .episodes-row{grid-template-columns:repeat(2,1fr)}
+  .add-form{grid-template-columns:1fr}
+  .hero{padding-top:44px;min-height:380px}
+  .caricature-slot{right:-5%;height:65%}
+}
+</style>
+</head>
+<body>
+<canvas id="particle-canvas"></canvas>
+<div class="amb1"></div><div class="amb2"></div><div class="amb3"></div>
+<div class="content">
+
+<nav>
+  <div class="nav-logo">✦ USFLIX<span>shree &amp; ritanshu · private</span></div>
+  <div style="display:flex;">
+    <div class="avatar s">S</div>
+    <div class="avatar r">R</div>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-vignette"></div>
+  <div class="caricature-slot" id="caricature-slot">
+    <div class="caricature-placeholder">
+      <div class="ph-icon">🎨</div>
+      <span>Drop your caricature image named <strong>couple.png</strong> into the <strong>public/</strong> folder — it'll appear right here ✨</span>
+    </div>
+  </div>
+  <div class="hero-eyebrow">now streaming · our story</div>
+  <h1 class="hero-title">Us, <em>Unfiltered</em><br>— A Love Series</h1>
+  <p class="hero-sub">Every episode is a memory. Every memory is ours forever. This one never ends.</p>
+  <div class="match-badge"><span class="heart-pulse">♥</span> Shree &amp; Ritanshu · Since the beginning</div>
+  <div class="hero-actions">
+    <button class="btn-play" onclick="scrollToEpisodes()">▶ &nbsp;Play Episode 1</button>
+    <button class="btn-more" onclick="scrollToAdd()">＋ &nbsp;Add New Memory</button>
+  </div>
+</div>
+
+<div class="featured-banner">
+  <div class="banner-left">
+    <div class="banner-tag">your universe</div>
+    <div class="banner-title">The Shree × Ritanshu Chronicles</div>
+    <div class="banner-desc">A never-ending series. New episodes drop whenever you two make a memory worth keeping. No cancellations. No finales. Just us.</div>
+  </div>
+  <div class="banner-right">
+    <div class="stat-box"><div class="stat-num" id="ep-count">—</div><div class="stat-lbl">Episodes</div></div>
+    <div class="stat-box"><div class="stat-num">∞</div><div class="stat-lbl">Seasons</div></div>
+    <div class="stat-box"><div class="stat-num">100%</div><div class="stat-lbl">Match</div></div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<div class="section" id="episodes-section">
+  <div class="section-title"><span class="dot"></span> Season 1 — How It All Started <span class="section-label">Complete</span></div>
+  <div class="episodes-row" id="ep-row-1"></div>
+</div>
+<div class="section">
+  <div class="section-title"><span class="dot"></span> Season 2 — The Cozy Middle <span class="section-label">Ongoing</span></div>
+  <div class="episodes-row" id="ep-row-2"></div>
+</div>
+<div class="section">
+  <div class="section-title"><span class="dot"></span> Season 3 — Coming Soon <span class="section-label" style="color:#ffc464">Future</span></div>
+  <div class="episodes-row" id="ep-row-3"></div>
+</div>
+
+<div class="add-section" id="add-section">
+  <div class="add-card">
+    <div class="add-title">✦ Add a New Episode</div>
+    <div class="add-sub">Every memory deserves its own episode. Write it down before it fades — your Netflix never forgets.</div>
+    <div class="add-form">
+      <div class="form-group"><label>Episode Title</label><input type="text" id="new-title" placeholder="The night we stayed up till 4am..."></div>
+      <div class="form-group"><label>Date</label><input type="text" id="new-date" placeholder="e.g. March 2024"></div>
+      <div class="form-group full"><label>Memory Note</label><textarea id="new-desc" placeholder="What happened? How did it feel? What do you never want to forget?"></textarea></div>
+      <div class="form-group"><label>Season</label>
+        <select id="new-season">
+          <option value="1">Season 1 — How It All Started</option>
+          <option value="2" selected>Season 2 — The Cozy Middle</option>
+          <option value="3">Season 3 — Coming Soon</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Mood</label>
+        <select id="new-mood">
+          <option value="🌙">🌙 Dreamy</option><option value="🕯️">🕯️ Cozy</option>
+          <option value="🌹">🌹 Romantic</option><option value="✨">✨ Magical</option>
+          <option value="💌">💌 Tender</option><option value="🎵">🎵 Musical</option>
+          <option value="🌸">🌸 Soft</option><option value="🔥">🔥 Passionate</option>
+        </select>
+      </div>
+      <div class="form-group full"><label>Video (optional)</label>
+        <div class="upload-area">
+          <input type="file" id="video-file" accept="video/*" onchange="handleFileSelect(event)">
+          <div class="upload-text">Drop a video or <span>browse files</span></div>
+          <div class="upload-preview" id="upload-preview"></div>
+        </div>
+      </div>
+      <button class="btn-add" id="btn-add" onclick="addEpisode()">✦ &nbsp;Save This Memory</button>
+    </div>
+  </div>
+</div>
+
+<footer><p>✦ USFLIX · <span class="red">Shree &amp; Ritanshu</span> · Private &amp; Eternal &nbsp;·&nbsp; No cancellations. No finales.</p></footer>
+</div>
+
+<div class="modal-wrap" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-hero" id="modal-hero"><span class="modal-icon" id="modal-icon">🌙</span></div>
+    <div class="modal-body">
+      <div class="modal-ep" id="modal-ep"></div>
+      <div class="modal-title" id="modal-title"></div>
+      <div class="modal-meta" id="modal-meta"></div>
+      <div class="modal-desc" id="modal-desc"></div>
+      <div class="modal-video-wrap" id="modal-video-wrap"><video id="modal-video" controls></video></div>
+      <div class="modal-actions">
+        <button class="btn-modal-play">▶ &nbsp;Relive This</button>
+        <button class="btn-modal-close" onclick="document.getElementById('modal').classList.remove('open')">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ── PARTICLES ──────────────────────────────────────────────
+const canvas=document.getElementById('particle-canvas');
+const ctx=canvas.getContext('2d');
+let W,H,parts=[];
+function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+resize();window.addEventListener('resize',resize);
+const RNG=(a,b)=>a+Math.random()*(b-a);
+const TYPES=['rose','sakura','heart','firefly'];
+
+function spawnParticle(randomY){
+  const t=TYPES[Math.floor(Math.random()*TYPES.length)];
+  return{t,x:RNG(0,W),y:randomY?RNG(0,H):RNG(-60,-5),
+    sz:t==='firefly'?RNG(1.5,3.5):RNG(5,15),
+    vy:t==='firefly'?RNG(-0.25,0.25):RNG(0.5,1.5),
+    vx:RNG(-0.4,0.4),rot:RNG(0,Math.PI*2),rotV:RNG(-0.025,0.025),
+    op:t==='firefly'?0:RNG(0.35,0.8),maxOp:RNG(0.4,0.85),
+    sw:RNG(0.3,0.9),swS:RNG(0.008,0.022),swO:RNG(0,Math.PI*2),
+    life:0,maxLife:t==='firefly'?RNG(180,380):9999,glowP:RNG(0,Math.PI*2)};
+}
+
+function drawPetal(s){
+  ctx.beginPath();
+  ctx.moveTo(0,0);ctx.bezierCurveTo(s*.5,-s*.5,s*1.2,-s*.2,s*.8,s*.6);
+  ctx.bezierCurveTo(s*.5,s*1.1,-s*.5,s*1.0,-s*.4,s*.5);
+  ctx.bezierCurveTo(-s*.8,s*.1,-s*.4,-s*.4,0,0);
+  ctx.fillStyle='rgba(210,40,65,0.88)';ctx.fill();
+  ctx.beginPath();ctx.moveTo(0,0);
+  ctx.bezierCurveTo(s*.3,-s*.2,s*.7,-s*.1,s*.5,s*.4);
+  ctx.bezierCurveTo(s*.3,s*.7,0,s*.6,0,0);
+  ctx.fillStyle='rgba(255,90,120,0.35)';ctx.fill();
+}
+function drawSakura(s){
+  for(let i=0;i<5;i++){
+    ctx.save();ctx.rotate(i/5*Math.PI*2);
+    ctx.beginPath();ctx.ellipse(0,-s*.5,s*.28,s*.52,0,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,175,195,0.82)';ctx.fill();ctx.restore();
+  }
+  ctx.beginPath();ctx.arc(0,0,s*.18,0,Math.PI*2);
+  ctx.fillStyle='rgba(255,220,232,0.95)';ctx.fill();
+}
+function drawHeart(s){
+  const k=s*.42;
+  ctx.beginPath();ctx.moveTo(0,k*.5);
+  ctx.bezierCurveTo(-k*2.5,-k*.5,-k*2.5,-k*2.5,0,-k*1.5);
+  ctx.bezierCurveTo(k*2.5,-k*2.5,k*2.5,-k*.5,0,k*.5);
+  ctx.fillStyle='rgba(229,9,20,0.72)';ctx.fill();
+}
+
+function initParticles(){
+  parts=[];
+  const n=Math.min(Math.floor(W/16),90);
+  for(let i=0;i<n;i++) parts.push(spawnParticle(true));
+}
+
+function tick(){
+  const target=Math.min(Math.floor(W/16),90);
+  if(parts.length<target) parts.push(spawnParticle(false));
+  parts=parts.filter(p=>{
+    p.life++;p.rot+=p.rotV;p.swO+=p.swS;
+    if(p.t==='firefly'){
+      p.x+=Math.sin(p.swO*1.4)*.9;p.y+=p.vy;p.glowP+=0.045;
+      if(p.life<45) p.op=(p.life/45)*p.maxOp;
+      else if(p.life>p.maxLife-45) p.op=((p.maxLife-p.life)/45)*p.maxOp;
+      else p.op=p.maxOp*(0.55+0.45*Math.sin(p.glowP));
+      if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;
+      return p.life<p.maxLife;
+    } else {
+      p.x+=p.vx+Math.sin(p.swO)*p.sw;p.y+=p.vy;
+      return p.y<H+70;
+    }
+  });
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  parts.forEach(p=>{
+    ctx.save();ctx.globalAlpha=p.op;ctx.translate(p.x,p.y);
+    if(p.t==='firefly'){
+      const g=ctx.createRadialGradient(0,0,0,0,0,p.sz*5);
+      g.addColorStop(0,'rgba(255,220,100,0.95)');
+      g.addColorStop(.4,'rgba(255,175,50,0.4)');
+      g.addColorStop(1,'rgba(255,140,0,0)');
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,p.sz*5,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='rgba(255,245,170,1)';ctx.beginPath();ctx.arc(0,0,p.sz*.75,0,Math.PI*2);ctx.fill();
+    } else {
+      ctx.rotate(p.rot);
+      if(p.t==='rose') drawPetal(p.sz);
+      else if(p.t==='sakura') drawSakura(p.sz);
+      else drawHeart(p.sz);
+    }
+    ctx.restore();
+  });
+}
+
+function loop(){tick();draw();requestAnimationFrame(loop);}
+initParticles();loop();
+
+// ── EPISODES ───────────────────────────────────────────────
+const PAL={
+  "🌙":["#0e0620","#221050","#3e2070"],
+  "🕯️":["#1c0e06","#3c1c06","#7c3810"],
+  "🌹":["#160408","#340810","#801830"],
+  "✨":["#060c1c","#0e1e48","#163268"],
+  "💌":["#160808","#360a1c","#861840"],
+  "🎵":["#060c16","#0c1c2e","#163050"],
+  "🌸":["#140810","#2e1030","#6e2460"],
+  "🔥":["#160600","#3c0e00","#862400"],
+};
+
+let selFile=null;
+function handleFileSelect(e){const f=e.target.files[0];if(f){selFile=f;document.getElementById('upload-preview').textContent='✓ '+f.name;}}
+
+function defaults(){return[
+  {id:'d1',title:"The Day We Met",date:"The beginning",desc:"The universe conspired. Two strangers, one moment, and suddenly everything shifted. Neither of you knew yet what this first hello would become.",mood:"✨",ep:"S1 · E1",season:1,progress:100},
+  {id:'d2',title:"The First Text",date:"A few days later",desc:"Typed. Deleted. Typed again. Three dots appeared on the other screen. Hearts in mouths on both sides.",mood:"💌",ep:"S1 · E2",season:1,progress:100},
+  {id:'d3',title:"Our First Real Talk",date:"Very late at night",desc:"The conversation that made you look up and realize it's 3am and you never once thought about going to sleep.",mood:"🌙",ep:"S1 · E3",season:1,progress:100},
+  {id:'d4',title:"Friends to Something More",date:"That quiet shift",desc:"No one said anything. But somewhere between the laughs and the long silences, you both felt it — this is different now.",mood:"🌹",ep:"S1 · E4",season:1,progress:100},
+  {id:'d5',title:"The First Date",date:"A nervous afternoon",desc:"Overthought outfits. Underthought words. But somehow, everything was exactly right from the first five minutes.",mood:"🌹",ep:"S2 · E1",season:2,progress:80,isNew:true},
+  {id:'d6',title:"When It Became Real",date:"A quiet evening",desc:"No grand gesture. Just a moment — maybe a look, maybe a word — where you both silently agreed: this is something.",mood:"🕯️",ep:"S2 · E2",season:2,progress:65},
+  {id:'d7',title:"Our Comfort Episode",date:"A rainy day",desc:"Blankets, something playing that neither of you were watching. Just the warmth of being near each other.",mood:"🕯️",ep:"S2 · E3",season:2,progress:45},
+  {id:'d8',title:"The Playlist We Made",date:"A random night",desc:"Song by song, you built a soundtrack to yourselves. Every track a mood, every mood a memory worth keeping.",mood:"🎵",ep:"S2 · E4",season:2,progress:30,isNew:true},
+  {id:'d9',title:"The Flower Bouquet Moment",date:"A golden afternoon",desc:"He showed up with flowers and a smile that made everything else disappear. That look between you two — pure cinema.",mood:"🌹",ep:"S2 · E5",season:2,progress:20,isNew:true},
+  {id:'d10',title:"A Trip Together",date:"Coming soon",desc:"Somewhere new. Same people. Everything different. This episode is still being written — and that's the best part.",mood:"✨",ep:"S3 · E1",season:3,progress:0,locked:true},
+  {id:'d11',title:"The One We Don't Know Yet",date:"Whenever it happens",desc:"A future memory sitting patiently, waiting to become real. It will be worth it.",mood:"🌸",ep:"S3 · E2",season:3,progress:0,locked:true},
+];}
+
+async function loadEpisodes(){
+  let custom=[];
+  try{const r=await fetch('/api/episodes');const d=await r.json();custom=d.episodes||[];}catch(e){}
+  renderAll(custom);
+}
+
+function renderAll(custom){
+  const rows={1:document.getElementById('ep-row-1'),2:document.getElementById('ep-row-2'),3:document.getElementById('ep-row-3')};
+  rows[1].innerHTML='';rows[2].innerHTML='';rows[3].innerHTML='';
+  const all=[...defaults(),...custom];
+  all.forEach(ep=>renderCard(ep,rows[ep.season]||rows[2]));
+  document.getElementById('ep-count').textContent=all.length;
+}
+
+function renderCard(ep,container){
+  const p=PAL[ep.mood]||PAL["🌙"];
+  const el=document.createElement('div');
+  el.className='episode-card';
+  el.innerHTML=`<div class="episode-thumb">
+    <div class="thumb-gradient" style="background:linear-gradient(135deg,${p[0]} 0%,${p[1]} 55%,${p[2]} 100%)">
+      <span class="thumb-icon">${ep.mood}</span>
+      <div class="ep-overlay">
+        <div class="ep-number">${ep.ep||''}</div>
+        <div class="ep-title">${ep.title}</div>
+        <div class="ep-meta">${ep.date||''}</div>
+        ${ep.progress>0?`<div class="ep-progress"><div class="ep-progress-fill" style="width:${ep.progress}%"></div></div>`:''}
+      </div>
+    </div>
+    ${ep.isNew?'<div class="new-badge">New</div>':''}
+    ${ep.locked?'<div class="coming-badge">Soon</div>':''}
+    ${ep.locked?'<div class="locked-overlay"><span style="font-size:22px;opacity:0.45">🔒</span></div>':''}
+    ${ep.videoUrl?'<div class="video-badge">Video</div>':''}
+  </div>`;
+  if(!ep.locked) el.addEventListener('click',()=>openModal(ep));
+  container.appendChild(el);
+}
+
+function openModal(ep){
+  const p=PAL[ep.mood]||PAL["🌙"];
+  document.getElementById('modal-hero').style.background=`linear-gradient(135deg,${p[0]} 0%,${p[1]} 55%,${p[2]} 100%)`;
+  document.getElementById('modal-icon').textContent=ep.mood;
+  document.getElementById('modal-ep').textContent=ep.ep||'';
+  document.getElementById('modal-title').textContent=ep.title;
+  document.getElementById('modal-meta').textContent=ep.date||'';
+  document.getElementById('modal-desc').textContent=ep.desc||'';
+  const vw=document.getElementById('modal-video-wrap'),v=document.getElementById('modal-video');
+  if(ep.videoUrl){v.src=ep.videoUrl;vw.style.display='block';}else{vw.style.display='none';v.src='';}
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal(e){
+  if(e.target===document.getElementById('modal')){
+    document.getElementById('modal').classList.remove('open');
+    document.getElementById('modal-video').pause();
+  }
+}
+
+async function addEpisode(){
+  const title=document.getElementById('new-title').value.trim();
+  const date=document.getElementById('new-date').value.trim();
+  const desc=document.getElementById('new-desc').value.trim();
+  const season=parseInt(document.getElementById('new-season').value);
+  const mood=document.getElementById('new-mood').value;
+  if(!title){showToast('Give your memory a title ✦');return;}
+  const btn=document.getElementById('btn-add');btn.disabled=true;btn.textContent='Saving...';
+  try{
+    const fd=new FormData();
+    fd.append('title',title);fd.append('date',date||'A moment in time');
+    fd.append('desc',desc||'A memory worth keeping.');fd.append('season',season);fd.append('mood',mood);
+    if(selFile) fd.append('video',selFile);
+    const r=await fetch('/api/episodes',{method:'POST',body:fd});
+    const d=await r.json();
+    if(d.success){
+      document.getElementById('new-title').value='';document.getElementById('new-date').value='';
+      document.getElementById('new-desc').value='';document.getElementById('upload-preview').textContent='';
+      selFile=null;showToast('✦ New episode saved to your story');loadEpisodes();
+    } else showToast('Something went wrong. Try again.');
+  } catch(e){showToast('Could not save. Check connection.');}
+  btn.disabled=false;btn.textContent='✦  Save This Memory';
+}
+
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3200);}
+function scrollToEpisodes(){document.getElementById('episodes-section').scrollIntoView({behavior:'smooth'})}
+function scrollToAdd(){document.getElementById('add-section').scrollIntoView({behavior:'smooth'})}
+
+// auto-show caricature if couple.png exists
+const probe=new Image();
+probe.onload=()=>{document.getElementById('caricature-slot').innerHTML=`<img src="couple.png" alt="Shree & Ritanshu">`;};
+probe.src='couple.png';
+
+loadEpisodes();
+</script>
+</body>
+</html>
