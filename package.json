@@ -1,0 +1,13 @@
+{
+  "name": "usflix",
+  "version": "1.0.0",
+  "description": "Shree & Ritanshu's private forever Netflix",
+  "private": true,
+  "dependencies": {
+    "@vercel/blob": "^0.23.0",
+    "@vercel/kv": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

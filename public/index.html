@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USFLIX · Sign In</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌹</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#090608;font-family:'DM Sans',sans-serif;color:#ede4dc;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+#particle-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.amb1{position:fixed;top:-20%;left:50%;transform:translateX(-50%);width:90%;height:60%;background:radial-gradient(ellipse,rgba(180,0,20,0.14) 0%,rgba(120,0,30,0.06) 45%,transparent 70%);pointer-events:none;z-index:0}
+.amb2{position:fixed;bottom:-10%;right:-5%;width:45%;height:45%;background:radial-gradient(ellipse,rgba(255,150,120,0.05) 0%,transparent 60%);pointer-events:none;z-index:0}
+
+/* NAV */
+.login-nav{position:fixed;top:0;left:0;right:0;padding:20px 44px;z-index:10;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:'Playfair Display',serif;font-size:26px;font-weight:600;color:#e50914;filter:drop-shadow(0 0 18px rgba(229,9,20,0.5));letter-spacing:0.04em}
+.logo span{color:#f0c0c8;font-style:italic;font-weight:400;font-size:13px;display:block;letter-spacing:0.14em;margin-top:-3px}
+
+/* CARD */
+.login-card{position:relative;z-index:5;background:rgba(9,6,8,0.88);border:1px solid rgba(229,9,20,0.14);border-radius:12px;padding:48px 44px 52px;width:100%;max-width:420px;backdrop-filter:blur(20px);animation:cardIn 0.6s cubic-bezier(0.34,1.4,0.64,1) both}
+@keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(0.97)}to{opacity:1;transform:none}}
+
+.login-title{font-family:'Playfair Display',serif;font-size:28px;font-weight:600;margin-bottom:6px}
+.login-sub{font-size:13px;color:rgba(237,228,220,0.4);margin-bottom:36px;line-height:1.6}
+.login-sub em{color:rgba(229,9,20,0.6);font-style:normal}
+
+/* WHO ARE YOU */
+.who-label{font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(237,228,220,0.32);margin-bottom:12px}
+.profile-row{display:flex;gap:14px;margin-bottom:28px}
+.profile-btn{flex:1;padding:14px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.09);background:rgba(255,255,255,0.03);cursor:pointer;transition:all 0.25s;display:flex;flex-direction:column;align-items:center;gap:8px}
+.profile-btn:hover{border-color:rgba(229,9,20,0.4);background:rgba(229,9,20,0.06);transform:translateY(-2px)}
+.profile-btn.selected{border-color:#e50914;background:rgba(229,9,20,0.1)}
+.profile-avatar{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:500;letter-spacing:0.04em}
+.profile-avatar.s{background:linear-gradient(135deg,#b85068,#e090a8);color:#fff}
+.profile-avatar.r{background:linear-gradient(135deg,#6a4890,#a07ab8);color:#fff}
+.profile-name{font-size:13px;color:rgba(237,228,220,0.7);font-weight:400}
+
+/* FORM */
+.form-group{margin-bottom:16px}
+label.fl{font-size:10px;letter-spacing:0.13em;text-transform:uppercase;color:rgba(237,228,220,0.32);display:block;margin-bottom:7px}
+.pass-wrap{position:relative}
+input[type=password],input[type=text].pass{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:12px 44px 12px 14px;color:#ede4dc;font-family:inherit;font-size:14px;transition:all 0.2s;outline:none}
+input[type=password]:focus,input[type=text].pass:focus{border-color:rgba(229,9,20,0.5);background:rgba(229,9,20,0.04)}
+.toggle-pass{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(237,228,220,0.35);cursor:pointer;font-size:14px;padding:0;line-height:1}
+.toggle-pass:hover{color:rgba(237,228,220,0.7)}
+
+.error-msg{font-size:12px;color:#e50914;margin-top:8px;display:none;animation:shake 0.35s ease both}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.error-msg.show{display:block}
+
+.btn-signin{width:100%;background:#e50914;color:#fff;border:none;padding:14px;border-radius:6px;font-family:inherit;font-size:15px;font-weight:500;cursor:pointer;transition:all 0.25s;margin-top:8px;letter-spacing:0.03em}
+.btn-signin:hover{background:#f40612;transform:translateY(-1px);box-shadow:0 6px 20px rgba(229,9,20,0.35)}
+.btn-signin:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+
+.hint{font-size:11px;color:rgba(237,228,220,0.2);text-align:center;margin-top:20px;line-height:1.7}
+
+/* PROPOSAL RIBBON */
+.proposal-ribbon{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:10;display:flex;align-items:center;gap:8px;background:rgba(255,190,80,0.08);border:1px solid rgba(255,190,80,0.2);padding:8px 20px;border-radius:24px;font-size:12px;color:#ffd090;backdrop-filter:blur(8px);white-space:nowrap;animation:floatUp 3s ease-in-out infinite}
+@keyframes floatUp{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-5px)}}
+
+@media(max-width:480px){
+  .login-card{margin:20px;padding:36px 24px 40px}
+  .login-nav{padding:16px 20px}
+}
+</style>
+</head>
+<body>
+<canvas id="particle-canvas"></canvas>
+<div class="amb1"></div>
+<div class="amb2"></div>
+
+<nav class="login-nav">
+  <div class="logo">✦ USFLIX<span>shree &amp; ritanshu · private</span></div>
+</nav>
+
+<div class="login-card">
+  <div class="login-title">Welcome back ♥</div>
+  <div class="login-sub">This is your private space. <em>Just the two of you.</em></div>
+
+  <div class="who-label">Who's watching?</div>
+  <div class="profile-row">
+    <button class="profile-btn" id="btn-shree" onclick="selectUser('shree')">
+      <div class="profile-avatar s">S</div>
+      <div class="profile-name">Shree</div>
+    </button>
+    <button class="profile-btn" id="btn-ritanshu" onclick="selectUser('ritanshu')">
+      <div class="profile-avatar r">R</div>
+      <div class="profile-name">Ritanshu</div>
+    </button>
+  </div>
+
+  <div class="form-group">
+    <label class="fl">Password</label>
+    <div class="pass-wrap">
+      <input type="password" id="password" placeholder="enter the password" onkeydown="if(event.key==='Enter')signIn()">
+      <button class="toggle-pass" onclick="togglePass()" id="toggle-btn">👁</button>
+    </div>
+    <div class="error-msg" id="error-msg">Wrong password. Try again 🌹</div>
+  </div>
+
+  <button class="btn-signin" id="btn-signin" onclick="signIn()">Sign In</button>
+  <div class="hint">Password is the same for both of you<br>This page never remembers — so no one else can sneak in</div>
+</div>
+
+<div class="proposal-ribbon">🌹 16 March 2026 — the day he asked</div>
+
+<script>
+// ── PARTICLES ─────────────────────────────────────────────
+const canvas=document.getElementById('particle-canvas');
+const ctx=canvas.getContext('2d');
+let W,H,parts=[];
+function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+resize();window.addEventListener('resize',resize);
+const RNG=(a,b)=>a+Math.random()*(b-a);
+const PT=['rose','sakura','heart','firefly'];
+function spawn(ry){
+  const t=PT[Math.floor(Math.random()*PT.length)];
+  return{t,x:RNG(0,W),y:ry?RNG(0,H):RNG(-60,-5),sz:t==='firefly'?RNG(1.5,3.5):RNG(5,14),
+    vy:t==='firefly'?RNG(-0.2,0.2):RNG(0.4,1.4),vx:RNG(-0.4,0.4),
+    rot:RNG(0,Math.PI*2),rv:RNG(-0.025,0.025),op:t==='firefly'?0:RNG(0.3,0.75),
+    mop:RNG(0.35,0.8),sw:RNG(0.3,0.9),ss:RNG(0.008,0.022),so:RNG(0,Math.PI*2),
+    life:0,ml:t==='firefly'?RNG(180,380):9999,gp:RNG(0,Math.PI*2)};
+}
+function drawPetal(s){ctx.beginPath();ctx.moveTo(0,0);ctx.bezierCurveTo(s*.5,-s*.5,s*1.2,-s*.2,s*.8,s*.6);ctx.bezierCurveTo(s*.5,s*1.1,-s*.5,s*1.0,-s*.4,s*.5);ctx.bezierCurveTo(-s*.8,s*.1,-s*.4,-s*.4,0,0);ctx.fillStyle='rgba(210,40,65,0.85)';ctx.fill();}
+function drawSakura(s){for(let i=0;i<5;i++){ctx.save();ctx.rotate(i/5*Math.PI*2);ctx.beginPath();ctx.ellipse(0,-s*.5,s*.28,s*.52,0,0,Math.PI*2);ctx.fillStyle='rgba(255,175,195,0.8)';ctx.fill();ctx.restore();}ctx.beginPath();ctx.arc(0,0,s*.18,0,Math.PI*2);ctx.fillStyle='rgba(255,220,232,0.9)';ctx.fill();}
+function drawHeart(s){const k=s*.42;ctx.beginPath();ctx.moveTo(0,k*.5);ctx.bezierCurveTo(-k*2.5,-k*.5,-k*2.5,-k*2.5,0,-k*1.5);ctx.bezierCurveTo(k*2.5,-k*2.5,k*2.5,-k*.5,0,k*.5);ctx.fillStyle='rgba(229,9,20,0.68)';ctx.fill();}
+function initP(){parts=[];const n=Math.min(Math.floor(W/18),70);for(let i=0;i<n;i++)parts.push(spawn(true));}
+function tick(){
+  const n=Math.min(Math.floor(W/18),70);if(parts.length<n)parts.push(spawn(false));
+  parts=parts.filter(p=>{
+    p.life++;p.rot+=p.rv;p.so+=p.ss;
+    if(p.t==='firefly'){p.x+=Math.sin(p.so*1.4)*.9;p.y+=p.vy;p.gp+=0.045;if(p.life<45)p.op=(p.life/45)*p.mop;else if(p.life>p.ml-45)p.op=((p.ml-p.life)/45)*p.mop;else p.op=p.mop*(0.55+0.45*Math.sin(p.gp));if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;return p.life<p.ml;}
+    else{p.x+=p.vx+Math.sin(p.so)*p.sw;p.y+=p.vy;return p.y<H+70;}
+  });
+}
+function drawP(){ctx.clearRect(0,0,W,H);parts.forEach(p=>{ctx.save();ctx.globalAlpha=p.op;ctx.translate(p.x,p.y);if(p.t==='firefly'){const g=ctx.createRadialGradient(0,0,0,0,0,p.sz*5);g.addColorStop(0,'rgba(255,220,100,0.95)');g.addColorStop(.4,'rgba(255,175,50,0.4)');g.addColorStop(1,'rgba(255,140,0,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,p.sz*5,0,Math.PI*2);ctx.fill();ctx.fillStyle='rgba(255,245,170,1)';ctx.beginPath();ctx.arc(0,0,p.sz*.75,0,Math.PI*2);ctx.fill();}else{ctx.rotate(p.rot);if(p.t==='rose')drawPetal(p.sz);else if(p.t==='sakura')drawSakura(p.sz);else drawHeart(p.sz);}ctx.restore();});}
+function loop(){tick();drawP();requestAnimationFrame(loop);}
+initP();loop();
+
+// ── AUTH ──────────────────────────────────────────────────
+let selectedUser=null;
+
+// auto-select if coming back
+const saved=sessionStorage.getItem('usflix_user');
+if(saved){selectUser(saved,true);}
+
+function selectUser(name,silent){
+  selectedUser=name;
+  document.getElementById('btn-shree').classList.toggle('selected',name==='shree');
+  document.getElementById('btn-ritanshu').classList.toggle('selected',name==='ritanshu');
+  if(!silent)document.getElementById('password').focus();
+}
+
+function togglePass(){
+  const inp=document.getElementById('password');
+  const btn=document.getElementById('toggle-btn');
+  if(inp.type==='password'){inp.type='text';inp.className='pass';btn.textContent='🙈';}
+  else{inp.type='password';inp.className='';btn.textContent='👁';}
+}
+
+function signIn(){
+  if(!selectedUser){
+    document.getElementById('error-msg').textContent='Pick a profile first 🌹';
+    document.getElementById('error-msg').classList.add('show');
+    return;
+  }
+  const pw=document.getElementById('password').value;
+  const btn=document.getElementById('btn-signin');
+  if(pw.toLowerCase()==='love'){
+    btn.textContent='✦ Coming in...';
+    btn.disabled=true;
+    sessionStorage.setItem('usflix_user',selectedUser);
+    sessionStorage.setItem('usflix_auth','true');
+    setTimeout(()=>window.location.href='main.html',800);
+  }else{
+    const err=document.getElementById('error-msg');
+    err.textContent='Wrong password. Try again 🌹';
+    err.classList.remove('show');
+    void err.offsetWidth;
+    err.classList.add('show');
+    document.getElementById('password').value='';
+    document.getElementById('password').focus();
+  }
+}
+</script>
+</body>
+</html>
