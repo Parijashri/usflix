@@ -1,7 +1,32 @@
-import { kv } from '@vercel/kv';
 import { put } from '@vercel/blob';
 
 export const config = { api: { bodyParser: false } };
+
+// ── Upstash Redis client (no extra package needed) ────────
+// Vercel auto-creates these env vars when you connect Upstash
+async function kvGet(key) {
+  const res = await fetch(
+    `${process.env.UPSTASH_REDIS_REST_URL}/get/${encodeURIComponent(key)}`,
+    { headers: { Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}` } }
+  );
+  const data = await res.json();
+  if (!data.result) return null;
+  try { return JSON.parse(data.result); } catch { return data.result; }
+}
+
+async function kvSet(key, value) {
+  await fetch(
+    `${process.env.UPSTASH_REDIS_REST_URL}/set/${encodeURIComponent(key)}`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(JSON.stringify(value)),
+    }
+  );
+}
 
 // ── helpers ───────────────────────────────────────────────
 
@@ -9,8 +34,6 @@ function json(res, status, data) {
   res.status(status).setHeader('Content-Type', 'application/json').end(JSON.stringify(data));
 }
 
-// Parse multipart/form-data without any extra npm packages.
-// Vercel gives us the raw Node IncomingMessage so we do this manually.
 async function parseMultipart(req) {
   return new Promise((resolve, reject) => {
     const boundary = (() => {
@@ -60,11 +83,10 @@ async function parseMultipart(req) {
 }
 
 // ── GET /api/episodes ─────────────────────────────────────
-// Returns the full list of saved episodes.
 
 async function handleGet(req, res) {
   try {
-    const episodes = (await kv.get('usflix:episodes')) || [];
+    const episodes = (await kvGet('usflix:episodes')) || [];
     json(res, 200, { success: true, episodes });
   } catch (err) {
     console.error('GET error', err);
@@ -73,19 +95,17 @@ async function handleGet(req, res) {
 }
 
 // ── POST /api/episodes ────────────────────────────────────
-// Accepts multipart form with optional video + thumbnail files.
-// Uploads them to Vercel Blob, saves metadata to Vercel KV.
 
 async function handlePost(req, res) {
   try {
     const parts = await parseMultipart(req);
 
-    const title     = parts.title     || 'Untitled Memory';
-    const date      = parts.date      || '';
-    const caption   = parts.caption   || '';
-    const desc      = parts.desc      || '';
-    const mood      = parts.mood      || '🌹';
-    const special   = parts.special   === 'true';
+    const title   = parts.title   || 'Untitled Memory';
+    const date    = parts.date    || '';
+    const caption = parts.caption || '';
+    const desc    = parts.desc    || '';
+    const mood    = parts.mood    || 'rose';
+    const special = parts.special === 'true';
 
     // Upload video to Blob if provided
     let videoUrl = null;
@@ -126,10 +146,10 @@ async function handlePost(req, res) {
       savedAt: new Date().toISOString(),
     };
 
-    // Append to existing list in KV
-    const existing = (await kv.get('usflix:episodes')) || [];
+    // Append to existing list in Upstash
+    const existing = (await kvGet('usflix:episodes')) || [];
     existing.push(episode);
-    await kv.set('usflix:episodes', existing);
+    await kvSet('usflix:episodes', existing);
 
     json(res, 200, { success: true, episode });
   } catch (err) {
@@ -140,7 +160,6 @@ async function handlePost(req, res) {
 
 // ── router ────────────────────────────────────────────────
 export default async function handler(req, res) {
-  // Allow both of you to use it from any device
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(200).end();
