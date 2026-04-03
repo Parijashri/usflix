@@ -528,6 +528,24 @@ document.getElementById('player').addEventListener('click',function(e){if(e.targ
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closePlayer();});
 
 // ── SAVE MEMORY ───────────────────────────────────────────
+async function uploadToBlob(file, folder){
+  // Step 1 — ask our API for an upload token
+  const tokenRes = await fetch('/api/upload', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ filename: folder+'/'+file.name, contentType: file.type })
+  });
+  const { url, clientToken } = await tokenRes.json();
+  // Step 2 — upload directly from browser to Vercel Blob (no size limit)
+  const uploadRes = await fetch(url, {
+    method: 'PUT',
+    headers: { 'Content-Type': file.type, 'x-vercel-blob-client-token': clientToken },
+    body: file
+  });
+  const result = await uploadRes.json();
+  return result.url;
+}
+
 async function saveMemory(){
   const name=document.getElementById('new-name').value.trim();
   const date=document.getElementById('new-date').value.trim();
@@ -537,29 +555,30 @@ async function saveMemory(){
   if(!name){showToast('Name your memory first ✦');return;}
   const btn=document.getElementById('btn-save');
   btn.disabled=true;
-  btn.textContent=selVid?'Uploading video...':selThumb?'Uploading thumbnail...':'Saving...';
   try{
-    const fd=new FormData();
-    fd.append('title',name);fd.append('date',date||'');
-    fd.append('desc',desc||'');
-    fd.append('caption',caption||'');fd.append('mood',mood);fd.append('season',2);
-    if(selThumb)fd.append('thumbnail',selThumb);
-    if(selVid)fd.append('video',selVid);
-    const r=await fetch('/api/episodes',{method:'POST',body:fd});
+    // Upload files directly to Blob from browser — no 4.5MB limit
+    let videoUrl=null, thumbUrl=null;
+    if(selVid){
+      btn.textContent='Uploading video...';
+      videoUrl = await uploadToBlob(selVid, 'usflix/videos');
+    }
+    if(selThumb){
+      btn.textContent='Uploading thumbnail...';
+      thumbUrl = await uploadToBlob(selThumb, 'usflix/thumbs');
+    }
+    // Send just the metadata + blob URLs to the API (tiny, never hits size limit)
+    btn.textContent='Saving...';
+    const r=await fetch('/api/episodes',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({title:name,date,caption,desc,mood,videoUrl,thumbUrl})
+    });
     const d=await r.json();
     if(d.success){resetForm();showToast('✦ Memory saved forever');await load();}
-    else showToast('Something went wrong. Try again.');
-  }catch{
-    // local fallback — works offline / before backend is set up
-    memories.push({
-      id:'l'+Date.now(),name,date,caption,mood,
-      thumbUrl:selThumbURL||null,
-      videoUrl:selVidURL||null,
-      desc,
-      isNew:true
-    });
-    render();resetForm(true);
-    showToast('✦ Saved locally — push to GitHub to make permanent');
+    else showToast('Something went wrong: '+d.error);
+  }catch(e){
+    console.error(e);
+    showToast('Could not save. Check your connection and try again.');
   }
   btn.disabled=false;btn.textContent='✦  Save This Memory';
 }
