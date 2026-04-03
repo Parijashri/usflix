@@ -1,25 +1,27 @@
-import { handleUpload } from '@vercel/blob/client';
+import { put } from '@vercel/blob';
+
+export const config = { api: { bodyParser: false } };
 
 export default async function handler(req, res) {
-  const body = await new Promise((resolve, reject) => {
-    let data = '';
-    req.on('data', c => data += c);
-    req.on('end', () => { try { resolve(JSON.parse(data)); } catch(e) { reject(e); } });
-    req.on('error', reject);
-  });
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).end();
 
   try {
-    const jsonResponse = await handleUpload({
-      body,
-      request: req,
-      onBeforeGenerateToken: async (pathname) => ({
-        allowedContentTypes: ['video/*', 'image/*'],
-        tokenPayload: JSON.stringify({ pathname }),
-      }),
-      onUploadCompleted: async () => {},
+    // Read filename and contentType from query params
+    const { filename, contentType } = req.query;
+    if (!filename) return res.status(400).json({ error: 'filename required' });
+
+    // Stream the raw body directly to Vercel Blob
+    const blob = await put(filename, req, {
+      access: 'public',
+      contentType: contentType || 'application/octet-stream',
     });
-    return res.status(200).json(jsonResponse);
+
+    return res.status(200).json({ url: blob.url });
   } catch (err) {
-    return res.status(400).json({ error: err.message });
+    console.error('Upload error:', err);
+    return res.status(500).json({ error: err.message });
   }
 }
