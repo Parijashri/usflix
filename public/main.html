@@ -529,21 +529,19 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closePlayer();});
 
 // ── SAVE MEMORY ───────────────────────────────────────────
 async function uploadToBlob(file, folder){
-  // Step 1 — ask our API for an upload token
-  const tokenRes = await fetch('/api/upload', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ filename: folder+'/'+file.name, contentType: file.type })
+  // Send file as raw body, filename+type in query string
+  const params = new URLSearchParams({
+    filename: folder+'/'+Date.now()+'-'+file.name,
+    contentType: file.type
   });
-  const { url, clientToken } = await tokenRes.json();
-  // Step 2 — upload directly from browser to Vercel Blob (no size limit)
-  const uploadRes = await fetch(url, {
-    method: 'PUT',
-    headers: { 'Content-Type': file.type, 'x-vercel-blob-client-token': clientToken },
+  const res = await fetch('/api/upload?'+params.toString(), {
+    method: 'POST',
+    headers: { 'Content-Type': file.type },
     body: file
   });
-  const result = await uploadRes.json();
-  return result.url;
+  if(!res.ok){ const t=await res.text(); throw new Error('Upload failed: '+t); }
+  const data = await res.json();
+  return data.url;
 }
 
 async function saveMemory(){
